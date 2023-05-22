@@ -11,43 +11,146 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView
+      redirect: '/home',
+      component: HomeView,
+      children: [
+        {
+          path: '/zhenlie',
+          name: '阵列',
+          component: ZlView
+        },
+        {
+          path: '/wltt',
+          name: '纹理贴图',
+          component: Wltt
+        },
+        {
+          path: '/zht',
+          name: '几何体',
+          component: Jht
+        },
+        {
+          path: '/jht',
+          name: '常见几何体',
+          component: CjjhtView
+        },
+        {
+          path: '/gui',
+          name: 'GUI',
+          component: Gui
+        },
+        {
+          path: '/about',
+          name: '机床',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: () => import('../views/AboutView.vue')
+        },
+        {
+          path: '/djl',
+          name: '点精灵辉光',
+          component: () => import('../views/点精灵辉光.vue')
+        },
+        {
+          path: '/qx',
+          name: '曲线',
+          component: () => import('../views/曲线.vue')
+        },
+        {
+          path: '/bezier',
+          name: '样条、贝塞尔曲线',
+          component: () => import('../views/样条曲线and贝塞尔曲线.vue')
+        },
+        {
+          path: '/fxgj',
+          name: '飞线轨迹',
+          component: () => import('../views/飞线轨迹.vue')
+        },
+        {
+          path: '/qxgd',
+          name: '曲线管道',
+          component: () => import('../views/曲线管道.vue')
+        },
+        {
+          path: '/xzcx',
+          name: '旋转成型',
+          component: () => import('../views/旋转成型.vue')
+        },
+        {
+          path: '/lscx',
+          name: '拉伸成型',
+          component: () => import('../views/拉伸.vue')
+        },
+        {
+          path: '/lxsy',
+          name: '螺旋试验',
+          component: () => import('../views/螺旋功能试验.vue')
+        },
+        {
+          path: '/cssbj',
+          name: 'css布局',
+          component: () => import('../views/css布局.vue')
+        },
+        {
+          path: '/mxct',
+          name: '深度冲突(模型闪烁)',
+          component: () => import('../views/深度冲突(模型闪烁).vue')
+        },
+        {
+          path: '/dbxlk',
+          name: '多边形轮廓',
+          component: () => import('../views/多边形轮廓.vue')
+        },
+        {
+          path: '/dbxlkyh',
+          name: '多边形轮廓(圆弧)',
+          component: () => import('../views/多边形轮廓圆弧.vue')
+        },
+        {
+          path: '/dbxnk',
+          name: 'Shape内孔.holes',
+          component: () => import('../views/内孔holes.vue')
+        },
+        {
+          path: '/mxbjx',
+          name: '模型边界线',
+          component: () => import('../views/模型边界线.vue')
+        },
+        {
+          path: '/jhtcolor',
+          name: '几何体顶点颜色',
+          component: () => import('../views/几何体顶点颜色.vue')
+        },
+        {
+          path: '/bwh',
+          name: '包围盒',
+          component: () => import('../views/包围盒.vue')
+        },
+        {
+          path: '/gdmy',
+          name: '管道漫游',
+          component: () => import('../views/管道漫游.vue')
+        },
+        {
+          path: '/sprite',
+          name: '精灵模型',
+          component: () => import('../views/精灵模型Sprite.vue')
+        },
+        {
+          path: '/xiayu',
+          name: '精灵模型下雨',
+          component: () => import('../views/sprite雨滴.vue')
+        },
+        {
+          path: '/fgmb',
+          name: '后处理',
+          component: () => import('../views/后处理发光描边.vue')
+        },
+      ]
       
     },
-    {
-      path: '/zhenlie',
-      name: 'zl',
-      component: ZlView
-    },
-    {
-      path: '/wltt',
-      name: 'zl',
-      component: Wltt
-    },
-    {
-      path: '/zht',
-      name: 'Jht',
-      component: Jht
-    },
-    {
-      path: '/jht',
-      name: '常见几何体',
-      component: CjjhtView
-    },
-    {
-      path: '/gui',
-      name: 'GUI',
-      component: Gui
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
-    }
+
   ]
 })
 

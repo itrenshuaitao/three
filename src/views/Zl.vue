@@ -25,26 +25,26 @@ onMounted(() => {
   // }
 
   // 双层循环
-//   for (let i = 0; i < 10; i++) {
-//     for (let j = 0; j < 10; j++) {
-//       const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
-//       // 在XOZ平面上分布
-//       mesh.position.set(i * 200, 0, j * 200);
-//       scene.add(mesh); //网格模型添加到场景中
-//     }
-//   }
-
-  // 三层循环
   for (let i = 0; i < 10; i++) {
     for (let j = 0; j < 10; j++) {
-      for (let k = 0; k < 10; k++) {
-        const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
-        // 在XOZ平面上分布
-        mesh.position.set(i * 200, k * 200, j * 200);
-        scene.add(mesh); //网格模型添加到场景中
-      }
+      const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+      // 在XOZ平面上分布
+      mesh.position.set(i * 200, 0, j * 200);
+      scene.add(mesh); //网格模型添加到场景中
     }
   }
+
+  // 三层循环
+  // for (let i = 0; i < 10; i++) {
+  //   for (let j = 0; j < 10; j++) {
+  //     for (let k = 0; k < 10; k++) {
+  //       const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+  //       // 在XOZ平面上分布
+  //       mesh.position.set(i * 200, k * 200, j * 200);
+  //       scene.add(mesh); //网格模型添加到场景中
+  //     }
+  //   }
+  // }
 
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
@@ -175,6 +175,30 @@ onMounted(() => {
   // document.body.appendChild(renderer.domElement)
   document.getElementById("webgl").appendChild(renderer.domElement);
 
+
+// renderer.domElement.addEventListener('click', function (event) {
+//     // .offsetY、.offsetX以canvas画布左上角为坐标原点,单位px
+//     const px = event.offsetX;
+//     const py = event.offsetY;
+//     //屏幕坐标px、py转WebGL标准设备坐标x、y
+//     //width、height表示canvas画布宽高度
+//     const x = (px / width) * 2 - 1;
+//     const y = -(py / height) * 2 + 1;
+//     //创建一个射线投射器`Raycaster`
+//     const raycaster = new THREE.Raycaster();
+//     //.setFromCamera()计算射线投射器`Raycaster`的射线属性.ray
+//     // 形象点说就是在点击位置创建一条射线，射线穿过的模型代表选中
+//     raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+//     //.intersectObjects([mesh1, mesh2, mesh3])对参数中的网格模型对象进行射线交叉计算
+//     // 未选中对象返回空数组[],选中一个对象，数组1个元素，选中两个对象，数组两个元素
+//     const intersects = raycaster.intersectObjects([...scene.children.splice(0,100)]);
+//     console.log("射线器返回的对象", intersects);
+//     // intersects.length大于0说明，说明选中了模型
+//     if (intersects.length > 0) {
+//         // 选中模型的第一个模型，设置为红色
+//         intersects[0].object.material.color.set(0xff0000);
+//     }
+// })
   // onresize 事件会在窗口被调整大小时发生
   window.onresize = function () {
     console.log("窗口变化了");
