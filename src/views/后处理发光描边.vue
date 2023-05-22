@@ -1,6 +1,13 @@
 <script setup>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+// 引入渲染器通道RenderPass
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+
+// 引入OutlinePass通道
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+
 //引入性能监视器stats.js
 import Stats from "three/addons/libs/stats.module.js";
 // 引入dat.gui.js的一个类GUI
@@ -21,24 +28,23 @@ onMounted(() => {
   // 创建精灵材质对象SpriteMaterial
   const spriteMaterial = new THREE.SpriteMaterial({
     color: 0x00ffff, //设置颜色
-     rotation:Math.PI/3,//旋转精灵对象45度，弧度值
+    rotation: Math.PI / 3, //旋转精灵对象45度，弧度值
   });
   // 创建精灵模型对象，不需要几何体geometry参数
   const sprite = new THREE.Sprite(spriteMaterial);
   // const mesh = new THREE.Mesh(geometry, material);
 
   // 控制精灵大小
-console.log('sprite.scale',sprite.scale);
-sprite.scale.set(50, 25, 1); //只需要设置x、y两个分量就可以
+  console.log("sprite.scale", sprite.scale);
+  sprite.scale.set(50, 25, 1); //只需要设置x、y两个分量就可以
 
-sprite.position.set(0,50,0);
+  sprite.position.set(0, 50, 0);
 
-const geometry = new THREE.PlaneGeometry(50, 25);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-const mesh = new THREE.Mesh(geometry, material);
+  const geometry = new THREE.BoxGeometry(50, 50, 50); //长方体
+  const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+  const mesh = new THREE.Mesh(geometry, material);
 
-
-  scene.add(sprite,mesh);
+  scene.add(mesh);
 
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
@@ -60,8 +66,8 @@ const mesh = new THREE.Mesh(geometry, material);
   const height = window.innerHeight; //窗口文档显示区的高度作为画布高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
   const camera = new THREE.PerspectiveCamera(30, width / height, 1, 3000);
-//   const s = 0.5;//控制left, right, top, bottom范围大小
-// const camera = new THREE.OrthographicCamera(-s * 1, s * 1, s, -s, 1, 8000);
+  //   const s = 0.5;//控制left, right, top, bottom范围大小
+  // const camera = new THREE.OrthographicCamera(-s * 1, s * 1, s, -s, 1, 8000);
 
   //相机在Three.js三维坐标系中的位置
   // 根据需要设置相机位置具体值
@@ -75,12 +81,12 @@ const mesh = new THREE.Mesh(geometry, material);
   });
   // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor("pink", 0.5); //设置背景颜色
+    // renderer.setClearColor("pink", 0.5); //设置背景颜色
 
   //   renderer.antialias = true,
   // 定义threejs输出画布的尺寸(单位:像素px)
   renderer.setSize(width, height); //设置three.js渲染区域的尺寸(像素px)
-  renderer.render(scene, camera); //执行渲染操作
+  //   renderer.render(scene, camera); //执行渲染操作
 
   // 设置相机控件轨道控制器OrbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -103,12 +109,45 @@ const mesh = new THREE.Mesh(geometry, material);
   //stats.domElement显示：渲染周期 渲染一帧多长时间(单位：毫秒ms)
   // stats.setMode(1);
   document.body.appendChild(stats.domElement);
+
+  // 创建后处理对象EffectComposer，WebGL渲染器作为参数
+  const composer = new EffectComposer(renderer);
+
+  // 创建一个渲染器通道，场景和相机作为参数
+  const renderPass = new RenderPass(scene, camera);
+  // 设置renderPass通道
+  composer.addPass(renderPass);
+
+  // OutlinePass第一个参数v2的尺寸和canvas画布保持一致
+  //   const v2 = new THREE.Vector2(window.innerWidth, window.innerWidth);
+  const v2 = new THREE.Vector2(800, 600);
+  const outlinePass = new OutlinePass(v2, scene, camera);
+  // 一个模型对象
+  outlinePass.selectedObjects = [mesh];
+
+  //模型描边颜色，默认白色
+  outlinePass.visibleEdgeColor.set(0xff00);
+  //高亮发光描边厚度
+  outlinePass.edgeThickness = 10
+  //高亮描边发光强度
+outlinePass.edgeStrength = 10; 
+ //模型闪烁频率控制，默认0不闪烁
+outlinePass.pulsePeriod = 2;
+//模型边缘高亮边框颜色，默认白色  
+outlinePass.visibleEdgeColor.set(0xffff00);
+
+
+  // 多个模型对象
+  // OutlinePass.selectedObjects = [mesh1,mesh2,group];
+
+  composer.addPass(outlinePass);
+
   // 渲染函数
 
   function render() {
     stats.update();
-
-    renderer.render(scene, camera); //执行渲染操作
+    composer.render();
+    // renderer.render(scene, camera); //执行渲染操作
     //requestAnimationFrame循环调用的函数中调用方法update(),来刷新时间
     // .position改变，重新执行lookAt(0,0,0)计算相机视线方向
     requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
