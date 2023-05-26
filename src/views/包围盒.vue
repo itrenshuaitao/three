@@ -234,10 +234,10 @@ onMounted(() => {
       const R = 12000; //相机圆周运动的半径
       // 渲染函数
       function render() {
-        // angle += 0.01;
+        angle += 0.01;
         // // 相机y坐标不变，在XOZ平面上做圆周运动
-        // camera.position.x = R * Math.cos(angle);
-        // camera.position.z = R * Math.sin(angle);
+        camera.position.x = R * Math.cos(angle);
+        camera.position.z = R * Math.sin(angle);
 
         renderer.render(scene, camera); //执行渲染操作
         camera.lookAt(0, 0, 0);

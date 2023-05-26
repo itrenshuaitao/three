@@ -11,7 +11,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/home',
+      redirect: '/zhenlie',
       component: HomeView,
       children: [
         {
@@ -147,9 +147,54 @@ const router = createRouter({
           name: '后处理',
           component: () => import('../views/后处理发光描边.vue')
         },
+        {
+          path: '/dtdzh',
+          name: '多通道组合',
+          component: () => import('../views/多通道组合.vue')
+        },
+        {
+          path: '/ray',
+          name: '射线Ray',
+          component: () => import('../views/射线Ray.vue')
+        },
+        {
+          path: '/mnzd',
+          name: '模拟走刀',
+          component: () => import('../views/模拟走刀.vue')
+        },
+        {
+          path: '/nbzd',
+          name: '内部走刀',
+          component: () => import('../views/内部走刀.vue')
+        },
+        {
+          path: '/nbzdgjxz',
+          name: '内部走刀(工件旋转)',
+          component: () => import('../views/内部走刀（工件旋转）.vue')
+        },
+        {
+          path: '/cjbz',
+          name: '场景标注标签',
+          component: () => import('../views/场景标注标签.vue')
+        },
+        {
+          path: '/djtjbz',
+          name: '点击添加标注',
+          component: () => import('../views/点击添加标注.vue')
+        },
+        {
+          path: '/CSS3D',
+          name: 'CSS3D渲染',
+          component: () => import('../views/渲染标签CSS3D.vue')
+        },
       ]
+
       
     },
+    {
+      path: '/demo',
+      component: () => import('../views/教程.vue')
+    }
 
   ]
 })

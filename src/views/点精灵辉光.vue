@@ -5,7 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/addons/libs/stats.module.js";
 
 // 引入dat.gui.js的一个类GUI
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
@@ -15,61 +15,60 @@ onMounted(() => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
 
+  // 实例化一个gui对象
+  const gui = new GUI();
+  //改变交互界面style属性
+  gui.domElement.style.right = "0px";
+  gui.domElement.style.top = "20px";
+  gui.domElement.style.width = "300px";
 
-// 实例化一个gui对象
-const gui = new GUI();
-//改变交互界面style属性
-gui.domElement.style.right = '0px';
-gui.domElement.style.top = '20px';
-gui.domElement.style.width = '300px';
+  // const geometry = new THREE.PlaneGeometry(200, 100); //矩形平面
+  const geometry1 = new THREE.BoxGeometry(100, 50, 50); //长方体
+  // // const geometry = new THREE.SphereGeometry(60, 25, 25); //球体
 
+  // console.log('uv',geometry.attributes.uv);
 
-// const geometry = new THREE.PlaneGeometry(200, 100); //矩形平面
-// // const geometry = new THREE.BoxGeometry(200, 100,100); //长方体
-// // const geometry = new THREE.SphereGeometry(60, 25, 25); //球体
+  // //纹理贴图加载器TextureLoader
+  const texLoader = new THREE.TextureLoader();
+  // // .load()方法加载图像，返回一个纹理对象Texture
+  // const texture = texLoader.load('images/3.jpg');
+  // const material = new THREE.MeshLambertMaterial({
+  //     // 设置纹理贴图：Texture对象作为材质map属性的属性值
+  //     map: texture,//map表示材质的颜色贴图属性
+  // });
+  console.log("material", material);
 
-// console.log('uv',geometry.attributes.uv);
-
-
-
-// //纹理贴图加载器TextureLoader
-const texLoader = new THREE.TextureLoader();
-// // .load()方法加载图像，返回一个纹理对象Texture
-// const texture = texLoader.load('images/3.jpg');
-// const material = new THREE.MeshLambertMaterial({
-//     // 设置纹理贴图：Texture对象作为材质map属性的属性值
-//     map: texture,//map表示材质的颜色贴图属性
-// });
-console.log('material',material)
-
-
-
-      var geometry = new THREE.SphereGeometry(30, 32, 16);
-      var material = new THREE.MeshLambertMaterial({ color: 0xffff00 });
-
-
-
-
+  var geometry = new THREE.SphereGeometry(30, 32, 16);
+  var material = new THREE.MeshLambertMaterial({ color: 0xffff00 });
 
   const mesh = new THREE.Mesh(geometry, material); //网格模型
 
-  scene.add(mesh);
+  var material1 = new THREE.MeshLambertMaterial({ color: 0xff00ff });
 
-     // 加载贴图
-      var texture = texLoader.load("images/4.png");
-      // 点精灵材质
-      var spriteMaterial = new THREE.SpriteMaterial({
-        map: texture,//贴图
-        color: 0xffff00,
-        blending: THREE.AdditiveBlending,//在使用此材质显示对象时要使用何种混合。加法
-      });
-      var sprite = new THREE.Sprite(spriteMaterial);
-      // 发光范围
-      sprite.scale.set(100, 100, 1.0);
-      mesh.add(sprite);
-gui.addColor(material, 'color').onChange((value)=>{
-    spriteMaterial.color=value
-    });
+  const mesh1 = new THREE.Mesh(geometry1, material1); //网格模型
+  mesh1.position.set(100, 0, 0);
+
+  scene.add(mesh, mesh1);
+
+  // 加载贴图
+  var texture = texLoader.load("images/4.png");
+  // 点精灵材质
+  var spriteMaterial = new THREE.SpriteMaterial({
+    map: texture, //贴图
+    color: 0xffff00,
+    blending: THREE.AdditiveBlending, //在使用此材质显示对象时要使用何种混合。加法
+  });
+  var sprite = new THREE.Sprite(spriteMaterial);
+  // 发光范围
+  sprite.scale.set(100, 100, 1.0);
+  sprite.change = function () {
+    mesh1.material.color.set(0xffffff);
+  };
+
+  mesh.add(sprite);
+  gui.addColor(material, "color").onChange((value) => {
+    spriteMaterial.color = value;
+  });
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
   // 参数2：1.0,表示光照强度，可以根据需要调整
@@ -99,7 +98,7 @@ gui.addColor(material, 'color').onChange((value)=>{
   const renderer = new THREE.WebGLRenderer({
     //渲染器锯齿属性
     antialias: false,
-    alpha: true
+    alpha: true,
   });
   // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -111,9 +110,9 @@ gui.addColor(material, 'color').onChange((value)=>{
   renderer.setSize(width, height); //设置three.js渲染区域的尺寸(像素px)
   renderer.render(scene, camera); //执行渲染操作
 
-console.log("scene",scene)
-      // scene.background = new THREE.Color("#d2ead2");
-      // gui.addColor(scene, "background").name("场景颜色");
+  console.log("scene", scene);
+  // scene.background = new THREE.Color("#d2ead2");
+  // gui.addColor(scene, "background").name("场景颜色");
   //创建stats对象
   const stats = new Stats();
 
@@ -131,6 +130,26 @@ console.log("scene",scene)
     requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
   }
   render();
+
+  document.getElementById("webgl").addEventListener("click", function (event) {
+    // event对象有很多鼠标事件相关信息
+    const px = event.offsetX;
+    const py = event.offsetY;
+    //屏幕坐标px、py转标准设备坐标x、y
+    //width、height表示canvas画布宽高度
+    const x = (px / window.innerWidth) * 2 - 1;
+    const y = -(py / window.innerHeight) * 2 + 1;
+    //创建一个射线投射器`Raycaster`
+    const raycaster = new THREE.Raycaster();
+    //.setFromCamera()计算射线投射器`Raycaster`的射线属性.ray
+    // 形象点说就是在点击位置创建一条射线，射线穿过的模型代表选中
+    raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+    // 射线交叉计算拾取精灵模型
+    const intersects = raycaster.intersectObjects([sprite]);
+    if (intersects.length > 0) {
+      intersects[0].object.change(); //执行选中sprite绑定的change函数
+    }
+  });
 
   // 设置相机控件轨道控制器OrbitControls
   const controls = new OrbitControls(camera, renderer.domElement);

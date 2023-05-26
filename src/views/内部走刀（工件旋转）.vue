@@ -3,12 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 //引入性能监视器stats.js
 import Stats from "three/addons/libs/stats.module.js";
-
 // 引入dat.gui.js的一个类GUI
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-
-import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
 import { onMounted } from "vue";
 
 onMounted(() => {
@@ -19,57 +15,62 @@ onMounted(() => {
   const gui = new GUI();
   //改变交互界面style属性
   gui.domElement.style.right = "0px";
-  gui.domElement.style.top = "20px";
+  gui.domElement.style.top = "120px";
   gui.domElement.style.width = "300px";
 
+  var extrudeSettings = {
+    amount: 2,
+    steps: 100,
+    bevelEnabled: false,
+    curveSegments: 80,
+    depth: 150,
+  };
 
+const shapeWidth = 30;
+  const shape = new THREE.Shape();
+shape.moveTo(-shapeWidth, shapeWidth); //.currentPoint变为(10,0)
+// 绘制直线线段，起点(10,0)，结束点(shapeWidth,0)
+shape.lineTo(shapeWidth, shapeWidth);//.currentPoint变为(shapeWidth, 0)
+shape.lineTo(shapeWidth, -shapeWidth);//.currentPoint变为(shapeWidth, shapeWidth)
+shape.lineTo(-shapeWidth, -shapeWidth);//.currentPoint变为(10, 50)
 
+  var holePath = new THREE.Path();
+  holePath.absarc(0, 0, 24, 0, Math.PI * 2, false);
+  shape.holes.push(holePath);
 
-  // 通过三个点定义一个二维样条曲线
-const curve = new THREE.SplineCurve([
-    new THREE.Vector2(50, 60),
-    new THREE.Vector2(25, 0),
-    new THREE.Vector2(50, -60)
-]);
-//曲线上获取点,作为旋转几何体的旋转轮廓
-const pointsArr = curve.getPoints(50); 
-  // pointsArr：旋转几何体的旋转轮廓形状
-  // 30：旋转圆周方向几何体细分精度
-  // 0, Math.PI：旋转的开始角度和结束角度
-  const geometry = new THREE.LatheGeometry(pointsArr, 30, 0, 2*Math.PI);
-
-  const material = new THREE.MeshBasicMaterial({
-    color: 'blue', //颜色
-    side: THREE.DoubleSide, //双面显示看到管道内壁
+  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  const material = new THREE.MeshPhongMaterial({
+    color: 0x00ff00,
+    opacity: 0.7,
+    transparent: true,
   });
-  // 创建线模型对象   构造函数：Line、LineLoop、LineSegments
-  const line = new THREE.Mesh(geometry, material);
-  scene.add(line);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotateX(Math.PI * 1.5);
+  scene.add(mesh);
 
+  const group = new THREE.Group();
+  //   刀具
+  const geometry1 = new THREE.CylinderGeometry(10, 10, 24, 32);
+  const material1 = new THREE.MeshBasicMaterial({ color: "blue" });
+  geometry1.translate(0, 12, 0);
 
-  // 多边形轮廓Shape
+  const cylinder = new THREE.Mesh(geometry1, material1);
 
-  // 一组二维向量表示一个多边形轮廓坐标
-// const pointsArr = [
-//     new THREE.Vector2(-60, 0),
-//     new THREE.Vector2(0, 50),
-//     new THREE.Vector2(60, 0),
-//     new THREE.Vector2(50, -50), 
-//        new THREE.Vector2(-50, -50),
+  group.add(cylinder);
 
+  const geometry2 = new THREE.BoxGeometry(6, 12, 3);
 
+  const material2 = new THREE.MeshBasicMaterial({ color: "#f23e23" });
+  geometry2.translate(0, -6, 0);
 
-// ]
-// // Shape表示一个平面多边形轮廓,参数是二维向量构成的数组pointsArr
-// const shape = new THREE.Shape(pointsArr);
-// const geometry = new THREE.ShapeGeometry(shape);
-// const material = new THREE.MeshLambertMaterial({
-//     color: 'blue',
-//     wireframe:true,
-// });
-//   const mesh = new THREE.Mesh(geometry, material);
-//   scene.add(mesh);
+  const cylinder2 = new THREE.Mesh(geometry2, material2);
+  group.add(cylinder2);
+  group.translateY(12);
+  //把group插入到场景中作为场景子对象
+  scene.add(group);
 
+  const meshAxesHelper = new THREE.AxesHelper(50);
+  group.add(meshAxesHelper);
 
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
@@ -103,7 +104,7 @@ const pointsArr = curve.getPoints(50);
   });
   // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor("red", 0); //设置背景颜色
+  renderer.setClearColor("pink", 0.5); //设置背景颜色
 
   //   renderer.antialias = true,
   // 定义threejs输出画布的尺寸(单位:像素px)
@@ -118,10 +119,36 @@ const pointsArr = curve.getPoints(50);
   //stats.domElement显示：渲染周期 渲染一帧多长时间(单位：毫秒ms)
   // stats.setMode(1);
   document.body.appendChild(stats.domElement);
+
+  const animationConfig = {
+    max: 150,
+    min: 12,
+    isAdd: true,
+  };
+
+  let angle = 0; //用于圆周运动计算的角度值
+  const R = 800; //相机圆周运动的半径
+
   // 渲染函数
   function render() {
     stats.update();
-
+    angle += 0.01;
+    // // 相机y坐标不变，在XOZ平面上做圆周运动
+    camera.position.x = R * Math.cos(angle);
+    camera.position.z = R * Math.sin(angle);
+    camera.lookAt(0, 0, 0);
+    if (animationConfig.isAdd) {
+      group.position.y++;
+      group.position.y === animationConfig.max &&
+        (animationConfig.isAdd = false);
+    } else {
+      group.position.y--;
+      group.rotateY(1); //旋转动画
+       mesh.rotateZ(.1)
+      group.position.y === animationConfig.min &&
+        (animationConfig.isAdd = true);
+    }
+   
     renderer.render(scene, camera); //执行渲染操作
     //requestAnimationFrame循环调用的函数中调用方法update(),来刷新时间
     requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧

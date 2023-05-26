@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script type="text/javascript">
+
+
+//创建一个canvas元素
+var canvas = document.createElement("canvas");
+//获取canvas的绘图上下文
+var ctx = canvas.getContext("2d");
+//设置canvas的宽高
+canvas.width = 1300;
+canvas.height = 300;
+canvas.style.background = 'green';
+//将canvas添加到文档中
+document.body.appendChild(canvas);
+
+//定义一个小球对象
+var ball = {
+  x: 150, //小球的x坐标
+  y: 150, //小球的y坐标
+  r: 20, //小球的半径
+  color: "red", //小球的颜色
+  speed: 10, //小球的速度
+  direction: -1 //小球的方向，-1表示向上，1表示向下
+};
+
+//定义一个绘制小球的函数
+function drawBall() {
+  //清除画布
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //开始绘制路径
+  ctx.beginPath();
+  //绘制一个圆形
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  //设置填充颜色
+  ctx.fillStyle = ball.color;
+  //填充路径
+  ctx.fill();
+}
+
+//定义一个更新小球位置的函数
+function updateBall() {
+  //根据小球的方向和速度更新y坐标
+  ball.x += ball.speed * ball.direction;
+  //如果小球碰到上边界或下边界，反转方向
+  if (ball.x - ball.r <= 0 || ball.x + ball.r >= canvas.width) {
+    ball.direction *= -1;
+  }
+}
+
+//定义一个循环函数，每隔一定时间重复执行
+function loop() {
+  //绘制小球
+  drawBall();
+  //更新小球位置
+  updateBall();
+  //设置下一次循环的时间间隔，单位是毫秒
+  setTimeout(loop, 20);
+}
+
+//调用循环函数，开始动画
+loop();
+
+
+
+
+
+</script>
+</html>

@@ -15,32 +15,31 @@ onMounted(() => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
 
-  const path = new THREE.LineCurve3(
-    new THREE.Vector3(0, 50, 0),
-    new THREE.Vector3(0, 0, 0)
-  );
-  const materialTube = new THREE.MeshLambertMaterial({
-    // color: 0xffff00,
-    color: 0xe1ffff,
-    side: THREE.DoubleSide, //双面显示看到管道内壁
+  //创建一个长方体几何对象Geometry
+  const geometry0 = new THREE.BoxGeometry(50, 50, 10);
+  //创建一个材质对象Material
+  // const material = new THREE.MeshBasicMaterial({
+  //MeshLambertMaterial受光照影响
+  const material0 = new THREE.MeshLambertMaterial({
+    // color: 0x0000f, //设置材质颜色
+    // transparent:true,//开启透明
+    opacity: 0.5, //设置透明度
   });
-  const mesh = new THREE.Mesh(
-    new THREE.TubeGeometry(path, 40, 13, 25),
-    materialTube
-  );
+
+  // 两个参数分别为几何体geometry、材质material
+  const mesh = new THREE.Mesh(geometry0, material0); //网格模型对象Mesh
+  //设置网格模型在三维空间中的位置坐标，默认是坐标原点
   scene.add(mesh);
 
   // 刀具
   const geometry1 = new THREE.ConeGeometry(3, 8, 32);
 
-  geometry1.rotateX(Math.PI);
-  // geometry1.rotateZ(Math.PI/2);
-
+  geometry1.rotateX(Math.PI * 1.5);
   const material1 = new THREE.MeshBasicMaterial({ color: 0xffff00 });
   const cone1 = new THREE.Mesh(geometry1, material1);
   scene.add(cone1);
-  cone1.position.set(100, 4, 0);
-
+  cone1.position.set(60, 0, 11);
+  //   cone1.rotateX()
 
   const speed = 1; // 移动速度
   const initX = 0;
@@ -81,16 +80,16 @@ onMounted(() => {
     // colorsArr.push(1 - percent, 0, percent); //蓝色到红色渐变色
   }
   //类型数组创建顶点颜色color数据
-  console.log(colorsArr);
 
   const colors = new Float32Array(colorsArr);
-  console.log(colors);
   // 设置几何体attributes属性的颜色color属性
   geometry.attributes.color = new THREE.BufferAttribute(colors, 3);
 
   const material = new THREE.LineBasicMaterial({
     // color: 0xff0000,
     vertexColors: true, //使用顶点颜色渲染
+    linewidth: 5, // in world units with size attenuation, pixels otherwise
+				worldUnits: true,
   });
   // line
   const line = new THREE.Line(geometry, material);
@@ -152,25 +151,27 @@ onMounted(() => {
   // 渲染函数
 
   renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
-  console.log(line);
 
-  let degree = 0;
-  let y = 0;
+  let maxY = 20;
+  let y = -20;
+  let z = 6;
+  let x = -20;
   let index = 0;
+  let direction = 1;
   //   let count = 0;
   // const positions = line.geometry.attributes.position.array;
-
   function render() {
     stats.update();
     if (index >= MAX_POINTS) {
-      //   requestAnimationFrame(render);
-      //   return;
+      requestAnimationFrame(render);
+      return;
     } else {
-      const d = (++degree * Math.PI) / 10; //弧度
-      const x = 17 * Math.cos(d);
-      y = y + 0.005;
-      const z = 17 * Math.sin(d);
-      cone1.position.set(x, y + 4, z);
+      y += 1 * direction;
+      if (y >= 20 || y <= -20) {
+        direction *= -1;
+        x = x + 0.3;
+      }
+      cone1.position.set(x, y, z + 5);
       const i = index * 3;
       positions[i] = x;
       positions[i + 1] = y;

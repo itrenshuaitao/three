@@ -3,12 +3,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 //引入性能监视器stats.js
 import Stats from "three/addons/libs/stats.module.js";
+// 引入CSS2渲染器CSS2DRenderer和CSS2模型对象CSS2DObject
+import {
+  CSS2DRenderer,
+  CSS2DObject,
+} from "three/addons/renderers/CSS2DRenderer.js";
 
 // 引入dat.gui.js的一个类GUI
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-
-import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
 import { onMounted } from "vue";
 
 onMounted(() => {
@@ -19,56 +21,69 @@ onMounted(() => {
   const gui = new GUI();
   //改变交互界面style属性
   gui.domElement.style.right = "0px";
-  gui.domElement.style.top = "20px";
+  gui.domElement.style.top = "120px";
   gui.domElement.style.width = "300px";
 
+  var extrudeSettings = {
+    amount: 2,
+    steps: 100,
+    bevelEnabled: false,
+    curveSegments: 80,
+    depth: 150,
+  };
 
+  var arcShape = new THREE.Shape();
+  arcShape.absarc(0, 0, 30, 0, Math.PI * 2, 0, false);
 
+  var holePath = new THREE.Path();
+  holePath.absarc(0, 0, 24, 0, Math.PI * 2, true);
+  arcShape.holes.push(holePath);
 
-  // 通过三个点定义一个二维样条曲线
-const curve = new THREE.SplineCurve([
-    new THREE.Vector2(50, 60),
-    new THREE.Vector2(25, 0),
-    new THREE.Vector2(50, -60)
-]);
-//曲线上获取点,作为旋转几何体的旋转轮廓
-const pointsArr = curve.getPoints(50); 
-  // pointsArr：旋转几何体的旋转轮廓形状
-  // 30：旋转圆周方向几何体细分精度
-  // 0, Math.PI：旋转的开始角度和结束角度
-  const geometry = new THREE.LatheGeometry(pointsArr, 30, 0, 2*Math.PI);
-
-  const material = new THREE.MeshBasicMaterial({
-    color: 'blue', //颜色
-    side: THREE.DoubleSide, //双面显示看到管道内壁
+  var geometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettings);
+  const material = new THREE.MeshPhongMaterial({
+    color: 0x00ff00,
+    opacity: 0.7,
+    transparent: true,
   });
-  // 创建线模型对象   构造函数：Line、LineLoop、LineSegments
-  const line = new THREE.Mesh(geometry, material);
-  scene.add(line);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotateX(Math.PI * 1.5);
+  scene.add(mesh);
+
+  const group = new THREE.Group();
+  //   刀具
+  const geometry1 = new THREE.CylinderGeometry(10, 10, 24, 32);
+  const material1 = new THREE.MeshBasicMaterial({ color: "blue" });
+  geometry1.translate(0, 12, 0);
+
+  const cylinder = new THREE.Mesh(geometry1, material1);
+
+  group.add(cylinder);
+
+  const geometry2 = new THREE.BoxGeometry(6, 12, 3);
+
+  const material2 = new THREE.MeshBasicMaterial({ color: "#f23e23" });
+  geometry2.translate(0, -6, 0);
+
+  const cylinder2 = new THREE.Mesh(geometry2, material2);
+  group.add(cylinder2);
+  group.translateY(12);
+  //把group插入到场景中作为场景子对象
+  scene.add(group);
+
+  const meshAxesHelper = new THREE.AxesHelper(50);
+  group.add(meshAxesHelper);
+
+      const div = document.getElementById('tag');
+  // HTML元素转化为threejs的CSS2模型对象
+const tag = new CSS2DObject(div);
+tag.position.set(0,65,0);
+group.add(tag);
 
 
-  // 多边形轮廓Shape
-
-  // 一组二维向量表示一个多边形轮廓坐标
-// const pointsArr = [
-//     new THREE.Vector2(-60, 0),
-//     new THREE.Vector2(0, 50),
-//     new THREE.Vector2(60, 0),
-//     new THREE.Vector2(50, -50), 
-//        new THREE.Vector2(-50, -50),
 
 
 
-// ]
-// // Shape表示一个平面多边形轮廓,参数是二维向量构成的数组pointsArr
-// const shape = new THREE.Shape(pointsArr);
-// const geometry = new THREE.ShapeGeometry(shape);
-// const material = new THREE.MeshLambertMaterial({
-//     color: 'blue',
-//     wireframe:true,
-// });
-//   const mesh = new THREE.Mesh(geometry, material);
-//   scene.add(mesh);
+
 
 
   //点光源：两个参数分别表示光源颜色和光照强度
@@ -88,7 +103,7 @@ const pointsArr = curve.getPoints(50);
 
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; //窗口文档显示区的宽度作为画布宽度
-  const height = window.innerHeight; //窗口文档显示区的高度作为画布高度
+  const height = window.innerHeight-84; //窗口文档显示区的高度作为画布高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
   const camera = new THREE.PerspectiveCamera(30, width / height, 1, 3000);
   //相机在Three.js三维坐标系中的位置
@@ -103,7 +118,7 @@ const pointsArr = curve.getPoints(50);
   });
   // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor("red", 0); //设置背景颜色
+  renderer.setClearColor("pink", 0.5); //设置背景颜色
 
   //   renderer.antialias = true,
   // 定义threejs输出画布的尺寸(单位:像素px)
@@ -118,15 +133,63 @@ const pointsArr = curve.getPoints(50);
   //stats.domElement显示：渲染周期 渲染一帧多长时间(单位：毫秒ms)
   // stats.setMode(1);
   document.body.appendChild(stats.domElement);
+
+
+
+
+
+
+// 创建一个CSS2渲染器CSS2DRenderer
+const css2Renderer = new CSS2DRenderer();
+
+// width, height：canvas画布宽高度
+css2Renderer.setSize(width, height);
+css2Renderer.domElement.style.position = 'absolute';
+css2Renderer.domElement.style.top = '84px';
+css2Renderer.domElement.style.pointerEvents = 'none';
+
+  document.getElementById("webgl").appendChild(css2Renderer.domElement);
+
+  const animationConfig = {
+    max: 150,
+    min: 12,
+    isAdd: true,
+  };
+
+  //   let angle = 0; //用于圆周运动计算的角度值
+  //   const R = 800; //相机圆周运动的半径
+
   // 渲染函数
   function render() {
     stats.update();
-
+    // angle += 0.01;
+    // // 相机y坐标不变，在XOZ平面上做圆周运动
+    // camera.position.x = R * Math.cos(angle);
+    // camera.position.z = R * Math.sin(angle);
+    // camera.lookAt(0, 0, 0);
+    if (animationConfig.isAdd) {
+      group.position.y++;
+      group.position.y === animationConfig.max &&
+        (animationConfig.isAdd = false);
+    } else {
+      group.position.y--;
+      group.rotateY(1); //旋转动画
+      group.position.y === animationConfig.min &&
+        (animationConfig.isAdd = true);
+    }
+    tag.element.innerHTML = '当前y轴坐标：'+group.position.y
     renderer.render(scene, camera); //执行渲染操作
+    // 用法和webgl渲染器渲染方法类似
+css2Renderer.render(scene, camera);
     //requestAnimationFrame循环调用的函数中调用方法update(),来刷新时间
     requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
   }
   render();
+
+
+
+
+
 
   // 设置相机控件轨道控制器OrbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -142,7 +205,8 @@ const pointsArr = curve.getPoints(50);
   window.onresize = function () {
     console.log("窗口变化了");
     // 重置渲染器输出画布canvas尺寸
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight-84);
+     css2Renderer.setSize(window.innerWidth,window.innerHeight-84);
     // 全屏情况下：设置观察范围长宽比aspect为窗口宽高比
     camera.aspect = window.innerWidth / window.innerHeight;
     // 渲染器执行render方法的时候会读取相机对象的投影矩阵属性projectionMatrix
@@ -155,7 +219,22 @@ const pointsArr = curve.getPoints(50);
 
 <template>
   <div id="webgl"></div>
+
+  <div id="tag">
+    同年，推出高精度的功率传感器USP900和振动传感器USV357，重构完全自主知识产权的底层算法技术；
+  </div>
 </template>
 
 <style scoped>
+#tag {
+  padding: 28px;
+  box-sizing: border-box;
+  background-image: url(./images/bg.png);
+  background-size: 200px 200px;
+  width: 200px;
+  height: 200px;
+  background-repeat: no-repeat;
+      background-color: rgb(144 126 255);
+    color: #eee799;
+}
 </style>

@@ -14,6 +14,15 @@ import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
 // 引入dat.gui.js的一个类GUI
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { onMounted } from "vue";
+const gui = new GUI();
+const scene = new THREE.Scene();
+const group = new THREE.Group();
+
+const animationConfig = {
+  max: -690,
+  min: -1080,
+  isAdd: true,
+};
 
 onMounted(() => {
   const texLoader = new THREE.TextureLoader();
@@ -23,15 +32,12 @@ onMounted(() => {
   const objLoader = new OBJLoader();
   const mtlLoader = new MTLLoader();
 
-  const gui = new GUI();
-
   objLoader.load(
     // "机床.obj",
     "ImageToStlcom_cb-212.obj",
     // "Alfred.OBJ",
     // "ImageToStl.obj",
     (root) => {
-      console.log(root);
       document.getElementById("container").style.display = "none";
       root.children[0].geometry.center();
       root.traverse(function (child) {
@@ -63,12 +69,12 @@ onMounted(() => {
           });
 
           // 模型边线设置
-          const edges = new THREE.EdgesGeometry(child.geometry);
-          const edgesMaterial = new THREE.LineBasicMaterial({
-            color: 0x00ffff,
-          });
-          const line = new THREE.LineSegments(edges, edgesMaterial);
-          child.add(line);
+          // const edges = new THREE.EdgesGeometry(child.geometry);
+          // const edgesMaterial = new THREE.LineBasicMaterial({
+          //   color: 0x00ffff,
+          // });
+          // const line = new THREE.LineSegments(edges, edgesMaterial);
+          // child.add(line);
         }
       });
 
@@ -76,7 +82,6 @@ onMounted(() => {
 
       gui.addColor(root.children[0].material, "color").name("机床颜色");
 
-      const scene = new THREE.Scene();
       scene.background = new THREE.Color("#d2ead2");
       gui.addColor(scene, "background").name("场景颜色");
 
@@ -231,11 +236,20 @@ onMounted(() => {
 
       // 渲染函数
       function render() {
-        aaa = aaa + 0.01;
-        console.log();
-        let color = Math.trunc(aaa) % 2 === 0 ? "#ff0000" : "#cb791a";
-        // console.log(color);
+        if (animationConfig.isAdd) {
+          group.position.y++;
+          group.position.y === animationConfig.max &&
+            (animationConfig.isAdd = false);
+        } else {
+          group.position.y--;
+          group.rotateY(1); //旋转动画
+          //  mesh.rotateZ(.1)
+          group.position.y === animationConfig.min &&
+            (animationConfig.isAdd = true);
+        }
 
+        aaa = aaa + 0.01;
+        let color = Math.trunc(aaa) % 2 === 0 ? "#ff0000" : "#cb791a";
         sprite.material.color.set(color);
         lightsMesh.material.color.set(color);
         if (sprite.scale.x < spriteConfig.spriteMin) {
@@ -245,15 +259,14 @@ onMounted(() => {
           spriteConfig.isAdd = false;
         }
         if (spriteConfig.isAdd) {
-          (sprite.scale.x = sprite.scale.x + spriteConfig.step),
-            (sprite.scale.y = sprite.scale.y + spriteConfig.step);
+          sprite.scale.x = sprite.scale.x + spriteConfig.step;
+          sprite.scale.y = sprite.scale.y + spriteConfig.step;
         } else {
           sprite.scale.x = sprite.scale.x - spriteConfig.step;
           sprite.scale.y = sprite.scale.y - spriteConfig.step;
         }
 
         renderer.render(scene, camera); //执行渲染操作
-
         requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
       }
       render();
@@ -271,7 +284,65 @@ onMounted(() => {
       console.error(err);
     }
   );
+
+  addMesh();
 });
+
+const addMesh = () => {
+  var extrudeSettings = {
+    amount: 2,
+    steps: 100,
+    bevelEnabled: false,
+    curveSegments: 80,
+    depth: 550,
+  };
+
+  const shapeWidth = 100;
+  const shape = new THREE.Shape();
+  shape.moveTo(-shapeWidth, shapeWidth); //.currentPoint变为(10,0)
+  // 绘制直线线段，起点(10,0)，结束点(shapeWidth,0)
+  shape.lineTo(shapeWidth, shapeWidth); //.currentPoint变为(shapeWidth, 0)
+  shape.lineTo(shapeWidth, -shapeWidth); //.currentPoint变为(shapeWidth, shapeWidth)
+  shape.lineTo(-shapeWidth, -shapeWidth); //.currentPoint变为(10, 50)
+
+  var holePath = new THREE.Path();
+  holePath.absarc(0, 0, 80, 0, Math.PI * 2, false);
+  shape.holes.push(holePath);
+
+  var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  const material = new THREE.MeshPhongMaterial({
+    color: "#000000",
+    opacity: 0.9,
+    transparent: true,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotateX(Math.PI * 1.5);
+  console.log(mesh);
+  mesh.position.set(-167, -1250, 360);
+  scene.add(mesh);
+
+  //   刀具
+  const geometry1 = new THREE.CylinderGeometry(50, 50, 800, 32);
+  const material1 = new THREE.MeshPhongMaterial({ color: "blue" });
+  geometry1.translate(0, 400, 0);
+
+  const cylinder = new THREE.Mesh(geometry1, material1);
+
+  group.add(cylinder);
+
+  const geometry2 = new THREE.BoxGeometry(60, 160, 20);
+
+  const material2 = new THREE.MeshPhongMaterial({ color: "#f23e23" });
+  geometry2.translate(0, -80, 0);
+
+  const cylinder2 = new THREE.Mesh(geometry2, material2);
+  group.add(cylinder2);
+  group.translateY(12);
+  //把group插入到场景中作为场景子对象
+  group.position.set(-167, -900, 360);
+
+  scene.add(group);
+};
 </script>
 
 <style>

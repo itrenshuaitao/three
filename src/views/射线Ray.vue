@@ -9,6 +9,8 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 // 引入UnrealBloomPass通道
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+// 引入GlitchPass通道
+import { GlitchPass } from "three/addons/postprocessing/GlitchPass.js";
 
 //引入性能监视器stats.js
 import Stats from "three/addons/libs/stats.module.js";
@@ -19,7 +21,6 @@ import { onMounted } from "vue";
 onMounted(() => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
-
   // 实例化一个gui对象
   const gui = new GUI();
   //改变交互界面style属性
@@ -27,26 +28,75 @@ onMounted(() => {
   gui.domElement.style.top = "120px";
   gui.domElement.style.width = "300px";
 
-  // 创建精灵材质对象SpriteMaterial
-  const spriteMaterial = new THREE.SpriteMaterial({
-    color: 0x00ffff, //设置颜色
-    rotation: Math.PI / 3, //旋转精灵对象45度，弧度值
-  });
-  // 创建精灵模型对象，不需要几何体geometry参数
-  const sprite = new THREE.Sprite(spriteMaterial);
-  // const mesh = new THREE.Mesh(geometry, material);
+//   const ray = new THREE.Ray();
+//   ray.origin.set(0, 0, 70); //起点
+//   // 表示射线沿着y轴正方向
+//   ray.direction = new THREE.Vector3(0, 1, 0);
+//   // 表示射线沿着y轴负方向
+//   // ray.direction = new THREE.Vector3(0,-1,0);
+//   console.log(ray);
 
-  // 控制精灵大小
-  console.log("sprite.scale", sprite.scale);
-  sprite.scale.set(50, 25, 1); //只需要设置x、y两个分量就可以
+//   // 三角形三个点坐标
+//   const p1 = new THREE.Vector3(0, 25, 50);
+//   const p2 = new THREE.Vector3(-30, 25, 80);
+//   const p3 = new THREE.Vector3(30, 25, 80);
+//   const point = new THREE.Vector3(); //用来记录射线和三角形的交叉点
+//   // `.intersectTriangle()`计算射线和三角形是否相交叉，相交返回交点，不相交返回null
+//   // .intersectTriangle()参数4设为true，表示进行背面剔除，虽然从几何空间上讲，该案例源码射线和三角形虽然交叉，但在threejs中，三角形背面对着射线，视为交叉无效，进行背面剔除，返回值r是null。
+//   const result = ray.intersectTriangle(p1, p2, p3, false, point);
+//   console.log("交叉点坐标", point);
+//   console.log("查看是否相交", result);
 
-  sprite.position.set(0, 50, 0);
 
-  const geometry = new THREE.BoxGeometry(50, 50, 50); //长方体
-  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  const mesh = new THREE.Mesh(geometry, material);
 
-  scene.add(mesh);
+const object1 = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 32, 32),
+  new THREE.MeshBasicMaterial({ color: '#B71C1C' })
+)
+object1.position.setX(-4)
+const object2 = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 32, 32),
+  new THREE.MeshBasicMaterial({ color: '#B71C1C' })
+)
+const object3 = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 32, 32),
+  new THREE.MeshBasicMaterial({ color: '#B71C1C' })
+)
+object3.position.setX(4)
+
+
+scene.add(object1, object2, object3)
+
+/**
+ * Raycaster
+ */
+// const raycaster = new THREE.Raycaster()
+// const rayOrigin = new THREE.Vector3(-6, 0, 0)
+// const rayDirections = new THREE.Vector3(10, 0, 0)
+// rayDirections.normalize()
+// raycaster.set(rayOrigin, rayDirections)
+
+
+// const intersect = raycaster.intersectObject(object3)
+// const intersects = raycaster.intersectObjects([object1, object2, object3])
+// if (intersects.length > 0) {
+//     // 选中模型的第一个模型，设置为红色
+//     intersects[0].object.material.color.set(0xffff00);
+// }
+
+
+
+
+// const arrowHelper = new THREE.ArrowHelper(
+//   raycaster.ray.direction,
+//   raycaster.ray.origin,
+//   50,
+//   0xff0000,
+//   1,
+//   0.5,
+// )
+// scene.add(arrowHelper)
+
 
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
@@ -60,8 +110,8 @@ onMounted(() => {
   scene.add(ambient);
 
   // AxesHelper：辅助观察的坐标系
-  const axesHelper = new THREE.AxesHelper(150);
-  scene.add(axesHelper);
+//   const axesHelper = new THREE.AxesHelper(150);
+//   scene.add(axesHelper);
 
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; //窗口文档显示区的宽度作为画布宽度
@@ -96,14 +146,6 @@ onMounted(() => {
   //   controls.target.set(1000, 0, 1000);
   controls.update(); //update()函数内会执行camera.lookAt(controls.targe)
 
-  //   controls.enablePan = false; //禁止右键拖拽
-  //   controls.enableZoom = false;//禁止缩放
-  // controls.enableRotate = false; //禁止旋转
-  //相机位置与观察目标点最小值
-  //   controls.minDistance = 200;
-  //相机位置与观察目标点最大值
-  //   controls.maxDistance = 400;
-
   //创建stats对象
   const stats = new Stats();
   // stats.domElement显示：渲染帧率  刷新频率,一秒渲染次数
@@ -112,63 +154,47 @@ onMounted(() => {
   // stats.setMode(1);
   document.body.appendChild(stats.domElement);
 
-  // OutlinePass第一个参数v2的尺寸和canvas画布保持一致
-  //   const v2 = new THREE.Vector2(window.innerWidth, window.innerWidth);
-  const v2 = new THREE.Vector2(800, 600);
-  const outlinePass = new OutlinePass(v2, scene, camera);
-  // 一个模型对象
-  outlinePass.selectedObjects = [mesh];
-
-  //模型描边颜色，默认白色
-  outlinePass.visibleEdgeColor.set(0xff00);
-  //高亮发光描边厚度
-  outlinePass.edgeThickness = 10;
-  //高亮描边发光强度
-  outlinePass.edgeStrength = 10;
-  //模型闪烁频率控制，默认0不闪烁
-  outlinePass.pulsePeriod = 2;
-  //模型边缘高亮边框颜色，默认白色
-  outlinePass.visibleEdgeColor.set(0xffff00);
-  // 多个模型对象
-  // OutlinePass.selectedObjects = [mesh1,mesh2,group];
-
-  //   composer.addPass(outlinePass);
-
-  //   resolution：表示泛光所覆盖的场景大小，是Vector2类型的向量
-  // strength：表示泛光的强度，值越大明亮的区域越亮，较暗区域变亮的范围越广
-  // radius：表示泛光散发的半径
-  // threshold：表示产生泛光的光照强度阈值，如果照在物体上的光照强度大于该值就会产生泛光
-  //bloom发光强度
-  // canvas画布宽高度尺寸是800, 600
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(800, 600), .4, 2, .1);
-  // canvas画布宽高度window.innerWidth, window.innerHeight
-  bloomPass.renderToScreen = false;
-
-
-  // 创建后处理对象EffectComposer，WebGL渲染器作为参数
-  const composer = new EffectComposer(renderer);
-
-  // 创建一个渲染器通道，场景和相机作为参数
-  const renderPass = new RenderPass(scene, camera);
-  // 设置renderPass通道
-  composer.addPass(renderPass);
-
-  composer.addPass(bloomPass);
   // 渲染函数
 
   function render() {
     stats.update();
-    composer.render();
-    // renderer.render(scene, camera); //执行渲染操作
+
+    renderer.render(scene, camera); //执行渲染操作
     //requestAnimationFrame循环调用的函数中调用方法update(),来刷新时间
     // .position改变，重新执行lookAt(0,0,0)计算相机视线方向
     requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
   }
   render();
-
   // 挂载到页面
   // document.body.appendChild(renderer.domElement)
   document.getElementById("webgl").appendChild(renderer.domElement);
+
+document.getElementById("webgl").addEventListener('click',function(event){
+    // event对象有很多鼠标事件相关信息
+    const px = event.offsetX;
+    const py = event.offsetY;
+      //屏幕坐标px、py转标准设备坐标x、y
+    //width、height表示canvas画布宽高度
+    const x = (px / window.innerWidth) * 2 - 1;
+    const y = -(py / window.innerHeight) * 2 + 1;
+    console.log(x,y);
+        //创建一个射线投射器`Raycaster`
+    const raycaster = new THREE.Raycaster();
+    //.setFromCamera()计算射线投射器`Raycaster`的射线属性.ray
+    // 形象点说就是在点击位置创建一条射线，射线穿过的模型代表选中
+    raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+    //.intersectObjects([mesh1, mesh2, mesh3])对参数中的网格模型对象进行射线交叉计算
+    // 未选中对象返回空数组[],选中一个对象，数组1个元素，选中两个对象，数组两个元素
+    const intersects = raycaster.intersectObjects([object1, object2, object3]);
+    console.log("射线器返回的对象", intersects);
+    // intersects.length大于0说明，说明选中了模型
+    if (intersects.length > 0) {
+        // 选中模型的第一个模型，设置为红色
+        intersects[0].object.material.color.set(0xffff00);
+    }
+})
+
+
 
   // onresize 事件会在窗口被调整大小时发生
   window.onresize = function () {
