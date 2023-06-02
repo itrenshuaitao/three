@@ -187,13 +187,23 @@ const router = createRouter({
           name: 'CSS3D渲染',
           component: () => import('../views/渲染标签CSS3D.vue')
         },
+        {
+          path: '/gjzdh',
+          name: '关键帧动画',
+          component: () => import('../views/关键帧动画.vue')
+        },
+        {
+          path: '/tween',
+          name: 'tween动画',
+          component: () => import('../views/tween.vue')
+        },
       ]
 
       
     },
     {
       path: '/demo',
-      component: () => import('../views/教程.vue')
+      component: () => import('../views/demo.vue')
     }
 
   ]

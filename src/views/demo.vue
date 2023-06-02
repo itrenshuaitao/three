@@ -22,24 +22,21 @@ const gui = new GUI();
 gui.domElement.style.right = "0px";
 gui.domElement.style.top = "20px";
 gui.domElement.style.width = "300px";
-const scene = new THREE.Scene();
+// 创建3D场景对象Scene
 
+const scene = new THREE.Scene();
 const redMaterial = new THREE.MeshPhongMaterial({
   color: 0xff0000, //0xff0000设置材质颜色为红色
 });
 
 onMounted(() => {
-  // 创建3D场景对象Scene
-
-  // 添加一个辅助网格地面
-  const gridHelper = new THREE.GridHelper(200, 15, 0x004444, 0x004444);
-  scene.add(gridHelper);
-
   //点光源：两个参数分别表示光源颜色和光照强度
   // 参数1：0xffffff是纯白光,表示光源颜色
   // 参数2：1.0,表示光照强度，可以根据需要调整
   const pointLight = new THREE.PointLight();
   pointLight.position.set(100, 100, 100);
+  // 平行光设置产生阴影的光源对象,开启光源阴影的计算功能
+  pointLight.castShadow = true;
   scene.add(pointLight);
   // // 光源辅助观察
   const pointLightHelper1 = new THREE.PointLightHelper(pointLight, 10);
@@ -55,6 +52,14 @@ onMounted(() => {
   // AxesHelper：辅助观察的坐标系
   const axesHelper = new THREE.AxesHelper(150);
   scene.add(axesHelper);
+
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false })
+  );
+  mesh.receiveShadow = true; //显示阴影
+  mesh.rotation.x = -Math.PI / 2;
+  scene.add(mesh);
 
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; //窗口文档显示区的宽度作为画布宽度
@@ -74,6 +79,9 @@ onMounted(() => {
   // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor("#BFE3DD", 1); //设置背景颜色
+  // 设置渲染器，允许光源阴影渲染
+  renderer.shadowMap.enabled = true;
+
   // renderer.setClearAlpha(0.3);
 
   //   renderer.antialias = true,
@@ -87,8 +95,8 @@ onMounted(() => {
   // stats.domElement显示：渲染帧率  刷新频率,一秒渲染次数
   stats.setMode(0); //默认模式
   //stats.domElement显示：渲染周期 渲染一帧多长时间(单位：毫秒ms)
-  // stats.setMode(1);
-  //   document.body.appendChild(stats.domElement);
+  stats.domElement.style.left = "150px";
+  document.body.appendChild(stats.domElement);
 
   let angle = 0; //用于圆周运动计算的角度值
   let angle1 = 0; //用于圆周运动计算的角度值
@@ -97,13 +105,12 @@ onMounted(() => {
   function render() {
     stats.update();
     if (animatedSwitch.box) {
-
-      const obj =   scene.getObjectByName('cylinderGeometry')
+      const obj = scene.getObjectByName("cylinderGeometry");
       angle1 += 0.01;
       // // 相机y坐标不变，在XOZ平面上做圆周运动
       obj.position.x = 50 * Math.cos(angle1);
       obj.position.z = 50 * Math.sin(angle1);
-      console.log(obj.position)
+      console.log(obj.position);
     }
     if (animatedSwitch.camera) {
       angle += 0.01;
@@ -111,8 +118,7 @@ onMounted(() => {
       camera.position.x = R * Math.cos(angle);
       camera.position.z = R * Math.sin(angle);
       camera.lookAt(0, 0, 0);
-      console.log(camera.position)
-
+      console.log(camera.position);
     }
 
     renderer.render(scene, camera); //执行渲染操作
@@ -153,17 +159,26 @@ const addGeometry = (e) => {
   // 两个参数分别为几何体geometry、材质material
   const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
   mesh.position.set(0, 5, 0);
+  mesh.name = "geometry";
+  // 设置产生投影的网格模型
+  mesh.castShadow = true;
+  // 设置接收阴影的投影面
+  mesh.receiveShadow = true;
 
   const coneGeometry = new THREE.ConeGeometry(5, 20, 32);
   const coneMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
   const cone = new THREE.Mesh(coneGeometry, coneMaterial);
   cone.position.set(25, 10, 0);
+  cone.castShadow = true;
+  cone.name = "cone";
 
   const cylinderGeometry = new THREE.CylinderGeometry(5, 5, 20, 32);
   const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
   const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
   cylinder.position.set(50, 10, 0);
+  cylinder.castShadow = true;
+
   cylinder.name = "cylinderGeometry";
 
   if (e.target.checked) {
@@ -171,13 +186,12 @@ const addGeometry = (e) => {
   } else {
     scene.remove(...scene.children.filter((mesh) => mesh.isMesh));
   }
-    console.log("scene", scene);
-
+  console.log("scene", scene);
 };
 
 const changeMetaerial = () => {
   scene.children
-    .filter((mesh) => mesh.isMesh && mesh.type === "Mesh")
+    .filter((mesh) => mesh.isMesh && mesh.type === "Mesh" && mesh.name)
     .map((mesh) => {
       //创建一个材质对象Material
       // MeshBasicMaterial  基础（无反射效果）
@@ -204,7 +218,7 @@ const openBox = (e) => {
   <div class="action">
     <div>
       <input type="checkbox" @click="addGeometry" />
-      <label>添加几何体</label>
+      <label>添加模型</label>
     </div>
     <div>
       <input type="checkbox" @click="changeMetaerial" />

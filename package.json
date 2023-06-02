@@ -9,6 +9,7 @@
     "test:unit": "vitest --environment jsdom --root src/"
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^18.6.4",
     "three": "^0.148.0",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"

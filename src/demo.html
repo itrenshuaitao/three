@@ -1,0 +1,92 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+
+
+
+<body>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+        {
+        "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+        }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 创建一个场景
+        var scene = new THREE.Scene();
+
+        // 创建一个透视相机
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // 创建一个WebGL 渲染器
+        var renderer = new THREE.WebGLRenderer();
+
+        // 设置渲染器的大小
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 将渲染器的画布添加到网页中
+        document.body.appendChild(renderer.domElement);
+
+        // 创建一个立方体几何体
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+
+        // 创建一个基础材质，并设置颜色为红色
+        var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+        // 创建一个网格物体，并将几何体和材质赋给它
+        var cube = new THREE.Mesh(geometry, material);
+
+        // 将网格物体添加到场景中
+        scene.add(cube);
+
+        // 设置相机的位置
+        camera.position.z = 5;
+
+        // 创建一个平行光，并设置颜色为白色
+        var light = new THREE.DirectionalLight(0xffffff);
+
+        // 设置平行光的位置
+        light.position.set(0, 2, 1);
+
+        // 将平行光添加到场景中
+        scene.add(light);
+
+        // 定义一个渲染函数
+        function render() {
+            // 请求浏览器在下一次重绘时调用渲染函数
+            requestAnimationFrame(render);
+
+            // 让立方体沿着y 轴旋转一点点
+            cube.rotation.y += 0.01;
+
+            // 使用渲染器渲染场景和相机
+            renderer.render(scene, camera);
+        }
+
+        // 调用渲染函数，开始动画
+        render();
+
+        // 设置相机控件轨道控制器OrbitControls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        // 相机控件.target属性在OrbitControls.js内部表示相机目标观察点，默认0,0,0
+        //   controls.target.set(0, 0, 0);
+        controls.update(); //update()函数内会执行camera.lookAt(controls.targe)
+    </script>
+</body>
+
+</html>

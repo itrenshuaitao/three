@@ -216,6 +216,9 @@ onMounted(() => {
         antialias: true,
         // alpha: true, //背景透明
       });
+      // 获取你屏幕对应的设备像素比.devicePixelRatio告诉threejs,以免渲染模糊问题
+      renderer.setPixelRatio(window.devicePixelRatio);
+
       //解决加载模型纹理贴图和原图不一样问题
       // renderer.outputEncoding = THREE.sRGBEncoding;
       // renderer.setClearAlpha(0.1);
